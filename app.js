@@ -41,17 +41,15 @@ app.route("/articles")
 
     }
     )
-    
+
     .post(
         function (req, res) {
-            const articleTitle = req.body.title;
-            const articleContent = req.body.content;
-            Article.insertMany({ title: articleTitle, content: articleContent });
+            Article.insertMany({ title: req.body.title, content: req.body.content });
             res.redirect("/articles")
 
         }
     )
-    
+
     .delete(
         function (req, res) {
             Article.deleteMany().then(function () {
@@ -61,21 +59,73 @@ app.route("/articles")
             });;
             res.redirect("/articles")
         }
-    );
+    )
+    ;
 
 
-app.get("/articles/:articleTitle", function (req, res) {
+app.route("/articles/:articleTitle")
+    .get(function (req, res) {
 
-    Article.find({ title: req.params.articleTitle })
-        .then(function (article) {
-            res.json(article);
-        })
-        .catch(function (err) {
-            console.log(err);
-            res.json(err);
-        })
+        Article.findOne({ title: req.params.articleTitle })
+            .then(function (article) {
+                res.json(article);
+            })
+            .catch(function (err) {
+                console.log(err);
+                res.json(err);
+            })
+    }
+    )
 
-});
+    .put(
+
+        function (req, res) {
+            Article.findOneAndUpdate(
+                { title: req.params.articleTitle },
+                { title: req.body.title, content: req.body.content },
+                { overwrite: true }
+            )
+                .then(function (response) {
+                    res.json({ response: "Successfuly updated article.", previous_article: response });
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+        }
+    )
+
+    .patch(
+
+        function (req, res) {
+            Article.updateOne(
+                { title: req.params.articleTitle },
+                req.body
+            )
+                .then(function (response) {
+                    res.json({ response: "Successfuly updated article.", previous_article: response });
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+        }
+    )
+
+    .delete(
+
+        function (req, res) {
+            Article.deleteOne(
+                { title: req.params.articleTitle }
+            )
+                .then(function (response) {
+                    res.json({ response: `Successfuly deleted ${req.params.articleTitle} article.`});
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+        }
+    )
+
+    ;
 
 
 app.listen(3000, function () {
